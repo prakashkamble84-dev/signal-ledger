@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import SignalExplorer from "@/features/signals/SignalExplorer";
 import {
   Activity, Bell, Bot, Building2, Check, ChevronDown, CircleHelp, Command,
   Database, LayoutDashboard, Menu, Moon, Plug, Radar, Search, Settings2,
@@ -45,14 +46,14 @@ function Sidebar({ close }: { close?: () => void }) {
   </>;
 }
 
-function Header({ onMenu, theme, toggleTheme }: { onMenu: () => void; theme: "light" | "dark"; toggleTheme: () => void }) {
+function Header({ onMenu, theme, toggleTheme, section }: { onMenu: () => void; theme: "light" | "dark"; toggleTheme: () => void; section: string }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   return <header className="topbar">
     <div className="topbar-left">
       <button className="icon-button mobile-menu" onClick={onMenu} aria-label="Open navigation"><Menu size={20} /></button>
-      <div className="breadcrumb"><span>Workspace</span><span className="breadcrumb-divider">/</span><strong>Overview</strong></div>
+      <div className="breadcrumb"><span>Workspace</span><span className="breadcrumb-divider">/</span><strong>{section}</strong></div>
     </div>
     <div className="topbar-actions">
       <button className="search-trigger" onClick={() => setSearchOpen(true)} aria-label="Open search"><Search size={16} /><span>Search anything</span><kbd><Command size={11} /> K</kbd></button>
@@ -103,7 +104,7 @@ const Index = () => {
   return <div className="app-shell">
     <aside className="desktop-sidebar"><Sidebar /></aside>
     {mobileOpen && <><button className="mobile-scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation overlay"/><aside className="mobile-sidebar"><Sidebar close={() => setMobileOpen(false)} /></aside></>}
-    <div className="workspace-area"><Header onMenu={() => setMobileOpen(true)} theme={theme} toggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")} /><main className="main-content">{location.pathname === "/" ? <Overview /> : <NotAvailable title={current?.label ?? "Workspace"} />}</main></div>
+    <div className="workspace-area"><Header onMenu={() => setMobileOpen(true)} theme={theme} toggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")} section={current?.label ?? "Workspace"} /><main className={`main-content${location.pathname === "/signals" ? " signals-main-content" : ""}`}>{location.pathname === "/" ? <Overview /> : location.pathname === "/signals" ? <SignalExplorer /> : <NotAvailable title={current?.label ?? "Workspace"} />}</main></div>
   </div>;
 };
 
