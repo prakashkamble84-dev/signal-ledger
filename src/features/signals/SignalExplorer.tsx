@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { loadSignalAccountAssociations } from "@/features/accounts/accountData";
 import "./signals.css";
 import {
   ArrowDown, ArrowDownUp, ArrowUp, Bookmark, Check, ChevronDown, CircleHelp, Clock3,
-  Copy, ExternalLink, Filter, ListFilter, Search, SlidersHorizontal, Star, X,
+  Copy, ExternalLink, Filter, ListFilter, Plus, Search, SlidersHorizontal, Star, X,
 } from "lucide-react";
 import {
   demoSignals, emptyFilters, filterSignals, getFreshness, readLocal, signalCategories,
@@ -35,7 +37,7 @@ function SignalFiltersPanel({ filters, setFilters, clear, onClose, mobile = fals
   </div>;
 }
 
-function SignalDetail({ signal, qualification, shortlisted, onClose, onQualification, onShortlist, announce }: { signal: Signal; qualification: Qualification; shortlisted: boolean; onClose: () => void; onQualification: (value: Qualification) => void; onShortlist: () => void; announce: (message: string) => void }) {
+export function SignalDetail({ signal, qualification, shortlisted, onClose, onQualification, onShortlist, announce, onOpenAccount, linkedAccountId, onCreateAccount }: { signal: Signal; qualification: Qualification; shortlisted: boolean; onClose: () => void; onQualification: (value: Qualification) => void; onShortlist: () => void; announce: (message: string) => void; onOpenAccount?: (accountId: string) => void; linkedAccountId?: string; onCreateAccount?: (signal: Signal) => void }) {
   useEffect(() => {
     const panel = document.querySelector<HTMLElement>(".signal-detail");
     const focusable = () => Array.from(panel?.querySelectorAll<HTMLElement>('button, select, a[href], input, [tabindex="0"]') ?? []).filter((item) => !item.hasAttribute("disabled"));
@@ -60,7 +62,7 @@ function SignalDetail({ signal, qualification, shortlisted, onClose, onQualifica
   return <div className="signal-detail-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
     <aside className="signal-detail" role="dialog" aria-modal="true" aria-labelledby="signal-detail-title">
       <div className="detail-top"><div><span className="detail-eyebrow">SIGNAL DETAILS</span><span className="demo-label"><span className="demo-dot" />Illustrative demo</span></div><button className="signals-icon-button" onClick={onClose} aria-label="Close signal details"><X size={20} /></button></div>
-      <div className="detail-scroll"><div className="detail-company"><span className="company-monogram">{signal.company[0]}</span><div><strong>{signal.company}</strong><span>{signal.domain ?? "Domain not provided"} · {signal.industry}</span></div></div>
+      <div className="detail-scroll"><div className="detail-company"><span className="company-monogram">{signal.company[0]}</span><div><strong>{signal.company}</strong><span>{signal.domain ?? "Domain not provided"} · {signal.industry}</span></div></div>{(linkedAccountId || signal.accountId) && onOpenAccount && <button className="inline-action signal-account-link" onClick={() => onOpenAccount(linkedAccountId ?? signal.accountId!)}>Open linked account <ExternalLink size={13}/></button>}{!signal.accountId && !linkedAccountId && onCreateAccount && <button className="inline-action signal-account-link" onClick={() => onCreateAccount(signal)}>Create account from this sample <Plus size={13}/></button>}
         <StatusTag value={signal.category} kind="qualification" />
         <h2 id="signal-detail-title" className="detail-title">{signal.headline}</h2>
         <div className="detail-tags"><StatusTag value={signal.relevance + " relevance"} kind="relevance" /><StatusTag value={getFreshness(signal.observedAt)} kind="freshness" /></div>
@@ -91,6 +93,8 @@ function SavedViews({ views, onApply, onRemove, onSave }: { views: SavedView[]; 
 const formatDate = (value?: string) => value ? new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(value)) : "Unknown";
 
 export default function SignalExplorer() {
+  const navigate = useNavigate();
+  const [accountLinks] = useState(() => loadSignalAccountAssociations());
   const [filters, setFilters] = useState<SignalFilters>(emptyFilters);
   const [qualifications, setQualifications] = useState<Record<string, Qualification>>(() => readLocal("signal-demo-qualifications", {}));
   const [shortlist, setShortlist] = useState<string[]>(() => readLocal("signal-demo-shortlist", []));
@@ -158,7 +162,7 @@ export default function SignalExplorer() {
     </section></div>
     <p className="local-storage-note">Demo actions and saved views are stored only in this browser. This workspace has no connected signal sources.</p>
     {filterDrawer && <div className="filter-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setFilterDrawer(false); }}><aside role="dialog" aria-modal="true" aria-labelledby="mobile-filter-title" className="filter-drawer"><SignalFiltersPanel filters={filters} setFilters={updateFilter} clear={() => { updateFilter(emptyFilters); setShortlistOnly(false); }} onClose={() => setFilterDrawer(false)} mobile/><button className="signal-primary-button filter-done" onClick={() => setFilterDrawer(false)}>Show {filtered.length} results</button></aside></div>}
-    {selected && <SignalDetail signal={selected} qualification={qualifications[selected.id] ?? selected.qualification} shortlisted={shortlist.includes(selected.id)} onClose={() => setSelected(null)} onQualification={(value) => setQualification(selected.id, value)} onShortlist={() => toggleShortlist(selected.id)} announce={setAnnouncement}/>}
+    {selected && <SignalDetail signal={selected} qualification={qualifications[selected.id] ?? selected.qualification} shortlisted={shortlist.includes(selected.id)} onClose={() => setSelected(null)} onQualification={(value) => setQualification(selected.id, value)} onShortlist={() => toggleShortlist(selected.id)} announce={setAnnouncement} onOpenAccount={(id) => navigate(`/accounts/${id}`)} linkedAccountId={accountLinks[selected.id]} onCreateAccount={(signal) => navigate(`/accounts?signalId=${signal.id}`)}/>}
     <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
   </div>;
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import SignalExplorer from "@/features/signals/SignalExplorer";
+import AccountIntelligence from "@/features/accounts/AccountIntelligence";
 import {
   Activity, Bell, Bot, Building2, Check, ChevronDown, CircleHelp, Command,
   Database, LayoutDashboard, Menu, Moon, Plug, Radar, Search, Settings2,
@@ -101,10 +102,12 @@ const Index = () => {
   }, [theme]);
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
   const current = [...primaryNav, ...utilityNav].find((item) => item.path === location.pathname);
+  const section = location.pathname.startsWith("/accounts") ? "Accounts" : current?.label ?? "Workspace";
+  const accountId = location.pathname.startsWith("/accounts/") ? location.pathname.split("/")[2] : undefined;
   return <div className="app-shell">
     <aside className="desktop-sidebar"><Sidebar /></aside>
     {mobileOpen && <><button className="mobile-scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation overlay"/><aside className="mobile-sidebar"><Sidebar close={() => setMobileOpen(false)} /></aside></>}
-    <div className="workspace-area"><Header onMenu={() => setMobileOpen(true)} theme={theme} toggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")} section={current?.label ?? "Workspace"} /><main className={`main-content${location.pathname === "/signals" ? " signals-main-content" : ""}`}>{location.pathname === "/" ? <Overview /> : location.pathname === "/signals" ? <SignalExplorer /> : <NotAvailable title={current?.label ?? "Workspace"} />}</main></div>
+    <div className="workspace-area"><Header onMenu={() => setMobileOpen(true)} theme={theme} toggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")} section={section} /><main className={`main-content${location.pathname === "/signals" ? " signals-main-content" : ""}${location.pathname.startsWith("/accounts") ? " accounts-main-content" : ""}`}>{location.pathname === "/" ? <Overview /> : location.pathname === "/signals" ? <SignalExplorer /> : location.pathname.startsWith("/accounts") ? <AccountIntelligence accountId={accountId} /> : <NotAvailable title={current?.label ?? "Workspace"} />}</main></div>
   </div>;
 };
 
