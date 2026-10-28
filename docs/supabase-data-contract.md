@@ -2,9 +2,9 @@
 
 ## Status
 
-This document records the frontend/database comparison for the Vite + React app. It defines a mapping proposal only; the app has no Supabase client, authentication integration, or data-access adapter, so no frontend-to-database serialization is currently implemented. Account and signal UI behavior remains illustrative and browser-local. Do not upload `localStorage` data or use these mappings for production writes until authentication and RLS are implemented and verified.
+This document records the frontend/database comparison for the Vite + React app. A Supabase browser client is configured from Vite environment variables, but the app has no Auth integration or data-access adapter, so no frontend-to-database serialization is implemented. Account and signal behavior remains illustrative and browser-local. Do not upload `localStorage` data or use these mappings for production writes until authentication and RLS are implemented and verified.
 
-The connected Supabase project currently contains `workspaces`, `workspace_memberships`, `accounts`, `signals`, `account_notes`, and `account_activity`. Its public tables were inspected directly: RLS is disabled on all six, and there are no policies in `pg_policies`. Existing grants include broad access for `anon`; the schema is not safe for application-client persistence in this state.
+The connected Supabase project contains `workspaces`, `workspace_memberships`, `accounts`, `signals`, `account_notes`, and `account_activity`. Verified existing findings: RLS is disabled on all six tables, there are no policies, and grants to `anon` and `authenticated` include excessive privileges such as `TRUNCATE`. This schema is not safe for application-client persistence.
 
 ## Canonical mapping proposal
 
@@ -53,3 +53,49 @@ No schema or policy changes were applied during this audit because the current e
 ## Current demo behavior
 
 Signal Explorer and Account Intelligence use illustrative in-memory definitions plus `localStorage` for edits/review state. Buying Signal Hunter filters the illustrative sample set locally, reports no external search, keeps results unsaved, and holds its review/account association changes in component session state. It does not write to Supabase.
+
+## Approved workspace authorization contract
+
+This is the product-approved authorization contract for future RLS/server-side policy design. It is documentation only and does not mean that any permission is currently enforced.
+
+All permissions apply only to a workspace where the authenticated user has active membership. Cross-workspace access is prohibited regardless of role.
+
+| Operation | Owner | Admin | Member |
+| --- | --- | --- | --- |
+| Read authorized workspace data | Yes | Yes | Yes |
+| Create accounts and signals | Yes | Yes | Yes |
+| Edit accounts and signals | Yes | Yes | Yes |
+| Delete accounts and signals | Yes | Yes | No |
+| Create and edit own notes | Yes | Yes | Yes |
+| Delete another user's notes | Yes | Yes | No |
+| View workspace activity history | Yes | Yes | Yes |
+| Manage ordinary members | Yes | Yes | No |
+| Grant or revoke admin roles | Yes | No | No |
+| Transfer ownership | Yes | No | No |
+| Delete workspace | Yes | No | No |
+
+Notes and activity permissions must be checked against actual authorship/actor identity and the record's workspace/account relationships. Clients must not be trusted to set or forge `created_by`, `author_user_id`, `actor_user_id`, or `workspace_id`; trusted database/server logic must establish or validate them.
+
+### Membership lifecycle
+
+- Workspace creation atomically creates the workspace and establishes its creator as the initial owner.
+- Owners and admins may invite ordinary members. An invitation is bound to the intended authenticated user and becomes active only after acceptance.
+- Only owners may grant or revoke admin roles or transfer ownership. Admins cannot promote themselves or anyone else to admin.
+- Owners and admins may remove ordinary members; only owners may remove admins.
+- Members may leave voluntarily. An owner must transfer ownership before leaving.
+- Ownership transfer is initiated by the current owner and accepted by an existing workspace member.
+- The last owner cannot be removed or demoted.
+- Workspace deletion is owner-only, requires explicit confirmation, and must follow a defined retention policy.
+- Membership and ownership changes are auditable.
+- All membership changes are validated by trusted database/server logic, never frontend checks alone.
+
+### Existing security findings — unresolved
+
+These are verified current-state findings, not resolved issues:
+
+- RLS is disabled on all six public application tables; no policies exist on them.
+- Grants to `anon` and `authenticated` include excessive privileges, including `TRUNCATE`.
+- `is_workspace_member(uuid)` and `is_workspace_admin(uuid)` are `SECURITY DEFINER` functions with an empty `search_path`; their execution ACL currently includes `anon` as well as `authenticated`, `service_role`, and `postgres`.
+- A supported migration workflow, isolated Supabase test project, and controlled test identities in separate workspaces remain unverified.
+
+No schema, grants, RLS settings, policies, functions, or production data were changed by recording this contract.
