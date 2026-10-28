@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import SignalExplorer from "@/features/signals/SignalExplorer";
 import AccountIntelligence from "@/features/accounts/AccountIntelligence";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import {
   Activity, Bell, Bot, Building2, Check, ChevronDown, CircleHelp, Command,
   Database, LayoutDashboard, Menu, Moon, Plug, Radar, Search, Settings2,
