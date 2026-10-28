@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loadSignalAccountAssociations } from "@/features/accounts/accountData";
+import BuyingSignalHunter from "./BuyingSignalHunter";
 import "./signals.css";
 import {
   ArrowDown, ArrowDownUp, ArrowUp, Bookmark, Check, ChevronDown, CircleHelp, Clock3,
@@ -148,6 +149,7 @@ export default function SignalExplorer() {
 
   return <div className="signal-page">
     <div className="signal-page-heading"><div><div className="eyebrow">DISCOVER & QUALIFY</div><h1>Signal Explorer</h1><p className="page-description">Find potential buying intent and identify accounts worth a closer look.</p></div><span className="demo-banner"><span className="demo-dot" />Illustrative demo data</span></div>
+    <BuyingSignalHunter />
     <div className="signal-toolbar"><label className="signal-search"><Search size={17} /><input value={filters.query} onChange={(event) => updateFilter({ ...filters, query: event.target.value })} placeholder="Search company, signal, or keyword" aria-label="Search company, signal, or keyword"/><kbd>/</kbd>{filters.query && <button onClick={() => updateFilter({ ...filters, query: "" })} aria-label="Clear search"><X size={15}/></button>}</label>
       <div className="signal-toolbar-actions"><SavedViews views={savedViews} onApply={applyView} onRemove={(id) => setSavedViews((current) => current.filter((view) => view.id !== id))} onSave={saveView}/><button className={`signal-secondary-button filter-toggle${countActive ? " has-active" : ""}`} onClick={() => setFilterDrawer(true)}><Filter size={15}/>Filters{countActive > 0 && <span className="filter-count">{countActive}</span>}</button><button className={`signal-secondary-button shortlist-toggle${shortlistOnly ? " is-saved" : ""}`} onClick={() => { setShortlistOnly(!shortlistOnly); setPage(1); }}><Star size={15} fill={shortlistOnly ? "currentColor" : "none"}/><span>Shortlist</span><span className="shortlist-count">{shortlist.length}</span></button></div>
     </div>
