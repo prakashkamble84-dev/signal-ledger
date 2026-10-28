@@ -2,9 +2,9 @@
 
 ## Status
 
-This document records the frontend/database comparison for the Vite + React app. A Supabase browser client is configured from Vite environment variables, but the app has no Auth integration or data-access adapter, so no frontend-to-database serialization is implemented. Account and signal behavior remains illustrative and browser-local. Do not upload `localStorage` data or use these mappings for production writes until authentication and RLS are implemented and verified.
+This document records the frontend/database comparison for the Vite + React app. The app has a Supabase browser client and Module 04 email/password authentication. Account and signal behavior remains illustrative and browser-local; no frontend-to-database serialization is implemented. Do not upload `localStorage` data or use these mappings for production writes.
 
-The connected Supabase project contains `workspaces`, `workspace_memberships`, `accounts`, `signals`, `account_notes`, and `account_activity`. Verified existing findings: RLS is disabled on all six tables, there are no policies, and grants to `anon` and `authenticated` include excessive privileges such as `TRUNCATE`. This schema is not safe for application-client persistence.
+The connected Supabase project contains workspace, membership, invitation, account, signal, notes, and activity tables. The earlier audit below records unresolved findings from that audit snapshot; the currently inspected database schema now shows RLS enabled and workspace-member policies on the existing application tables. The precise live grants and policy ACLs should be re-audited before production persistence. Module 05 added its own subscription tables with RLS and least-privilege grants; details are in `docs/subscription-foundation.md`.
 
 ## Canonical mapping proposal
 
@@ -89,13 +89,13 @@ Notes and activity permissions must be checked against actual authorship/actor i
 - Membership and ownership changes are auditable.
 - All membership changes are validated by trusted database/server logic, never frontend checks alone.
 
-### Existing security findings — unresolved
+### Earlier security audit findings — revalidation required
 
-These are verified current-state findings, not resolved issues:
+The following issues were documented by the earlier read-only audit and should not be assumed to describe the current database. Subsequent schema inspection shows RLS and member policies are now present on the existing workspace data tables, but effective grants and policy ACLs have not been comprehensively re-audited in this module:
 
-- RLS is disabled on all six public application tables; no policies exist on them.
-- Grants to `anon` and `authenticated` include excessive privileges, including `TRUNCATE`.
-- `is_workspace_member(uuid)` and `is_workspace_admin(uuid)` are `SECURITY DEFINER` functions with an empty `search_path`; their execution ACL currently includes `anon` as well as `authenticated`, `service_role`, and `postgres`.
+- The earlier audit reported RLS disabled and no policies on six public tables.
+- It reported excessive grants to `anon` and `authenticated`, including `TRUNCATE`.
+- It reported that `is_workspace_member(uuid)` and `is_workspace_admin(uuid)` were executable by `anon` in addition to `authenticated`, `service_role`, and `postgres`.
 - A supported migration workflow, isolated Supabase test project, and controlled test identities in separate workspaces remain unverified.
 
-No schema, grants, RLS settings, policies, functions, or production data were changed by recording this contract.
+Module 05's additive subscription schema is documented in `docs/subscription-foundation.md`. No existing invitations, memberships, or policies were modified for Module 05.

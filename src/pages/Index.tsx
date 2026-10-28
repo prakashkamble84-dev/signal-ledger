@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import SignalExplorer from "@/features/signals/SignalExplorer";
 import AccountIntelligence from "@/features/accounts/AccountIntelligence";
+import SubscriptionStatus from "@/features/subscriptions/SubscriptionStatus";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
@@ -109,7 +110,7 @@ const Index = () => {
   return <div className="app-shell">
     <aside className="desktop-sidebar"><Sidebar /></aside>
     {mobileOpen && <><button className="mobile-scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation overlay"/><aside className="mobile-sidebar"><Sidebar close={() => setMobileOpen(false)} /></aside></>}
-    <div className="workspace-area"><Header onMenu={() => setMobileOpen(true)} theme={theme} toggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")} section={section} /><main className={`main-content${location.pathname === "/signals" ? " signals-main-content" : ""}${location.pathname.startsWith("/accounts") ? " accounts-main-content" : ""}`}>{location.pathname === "/" ? <Overview /> : location.pathname === "/signals" ? <SignalExplorer /> : location.pathname.startsWith("/accounts") ? <AccountIntelligence accountId={accountId} /> : <NotAvailable title={current?.label ?? "Workspace"} />}</main></div>
+    <div className="workspace-area"><Header onMenu={() => setMobileOpen(true)} theme={theme} toggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")} section={section} /><main className={`main-content${location.pathname === "/signals" ? " signals-main-content" : ""}${location.pathname.startsWith("/accounts") ? " accounts-main-content" : ""}`}>{location.pathname === "/" ? <Overview /> : location.pathname === "/signals" ? <SignalExplorer /> : location.pathname.startsWith("/accounts") ? <AccountIntelligence accountId={accountId} /> : location.pathname === "/settings" ? <SubscriptionStatus /> : <NotAvailable title={current?.label ?? "Workspace"} />}</main></div>
   </div>;
 };
 
