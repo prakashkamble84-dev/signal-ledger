@@ -12,7 +12,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const destination = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/";
+  const destination = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/workspace";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

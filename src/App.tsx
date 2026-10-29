@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from "rea
 import { useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import MarketingHome from "./pages/MarketingHome";
+import SignupLanding from "./pages/SignupLanding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,7 +22,7 @@ function ProtectedRoutes() {
 function LoginRoute() {
   const { user, loading } = useAuth();
   if (loading) return <main className="auth-loading" role="status" aria-live="polite"><span className="auth-spinner" aria-hidden="true" />Checking your session…</main>;
-  return user ? <Navigate to="/" replace /> : <Login />;
+  return user ? <Navigate to="/workspace" replace /> : <Login />;
 }
 
 const App = () => (
@@ -30,9 +32,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<MarketingHome />} />
           <Route path="/login" element={<LoginRoute />} />
+          <Route path="/signup" element={<SignupLanding />} />
           <Route element={<ProtectedRoutes />}>
-            <Route path="/" element={<Index />} />
+            <Route path="/workspace" element={<Index />} />
             <Route path="/signals" element={<Index />} />
             <Route path="/accounts" element={<Index />} />
             <Route path="/accounts/:accountId" element={<Index />} />

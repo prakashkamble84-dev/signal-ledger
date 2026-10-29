@@ -13,7 +13,7 @@ import {
 
 type NavItem = { label: string; path: string; icon: typeof LayoutDashboard };
 const primaryNav: NavItem[] = [
-  { label: "Overview", path: "/", icon: LayoutDashboard },
+  { label: "Overview", path: "/workspace", icon: LayoutDashboard },
   { label: "Signal Explorer", path: "/signals", icon: Radar },
   { label: "Accounts", path: "/accounts", icon: Building2 },
   { label: "Opportunities", path: "/opportunities", icon: Target },
@@ -110,7 +110,7 @@ const Index = () => {
   return <div className="app-shell">
     <aside className="desktop-sidebar"><Sidebar /></aside>
     {mobileOpen && <><button className="mobile-scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation overlay"/><aside className="mobile-sidebar"><Sidebar close={() => setMobileOpen(false)} /></aside></>}
-    <div className="workspace-area"><Header onMenu={() => setMobileOpen(true)} theme={theme} toggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")} section={section} /><main className={`main-content${location.pathname === "/signals" ? " signals-main-content" : ""}${location.pathname.startsWith("/accounts") ? " accounts-main-content" : ""}`}>{location.pathname === "/" ? <Overview /> : location.pathname === "/signals" ? <SignalExplorer /> : location.pathname.startsWith("/accounts") ? <AccountIntelligence accountId={accountId} /> : location.pathname === "/settings" ? <SubscriptionStatus /> : <NotAvailable title={current?.label ?? "Workspace"} />}</main></div>
+    <div className="workspace-area"><Header onMenu={() => setMobileOpen(true)} theme={theme} toggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")} section={section} /><main className={`main-content${location.pathname === "/signals" ? " signals-main-content" : ""}${location.pathname.startsWith("/accounts") ? " accounts-main-content" : ""}`}>{location.pathname === "/workspace" ? <Overview /> : location.pathname === "/signals" ? <SignalExplorer /> : location.pathname.startsWith("/accounts") ? <AccountIntelligence accountId={accountId} /> : location.pathname === "/settings" ? <SubscriptionStatus /> : <NotAvailable title={current?.label ?? "Workspace"} />}</main></div>
   </div>;
 };
 
