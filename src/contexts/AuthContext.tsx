@@ -7,6 +7,7 @@ type AuthContextValue = {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null; verificationRequired: boolean }>;
+  signUp: (email: string, password: string, plan?: string) => Promise<{ error: string | null; verificationRequired: boolean }>;
   signOut: () => Promise<{ error: string | null }>;
   refreshSession: () => Promise<void>;
 };
@@ -38,24 +39,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (data.session) setSession(data.session);
-    const verificationRequired = Boolean(error && (error.code === "email_not_confirmed" || error.message.toLowerCase().includes("email not confirmed")));
-    return { error: error?.message ?? null, verificationRequired };
-  }, []);
-
-  const signOut = useCallback(async () => {
-    const { error } = await supabase.auth.signOut();
-    if (!error) setSession(null);
-    return { error: error?.message ?? null };
-  }, []);
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (data.session) setSession(data.session);
+      const verificationRequired = Boolean(error && (error.code === "email_not_confirmed" || error.message.toLowerCase().includes("email not confirmed")));
+      return { error: error?.message ?? null, verificationRequired };
+    }, []);
+  
+    const signUp = useCallback(async (email: string, password: string, plan?: string) => {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: new URL("/verify-email", window.location.origin).href,
+          data: { plan: plan ?? "growth" },
+        },
+      });
+      if (data.session) setSession(data.session);
+      const verificationRequired = Boolean(error && (error.code === "email_not_confirmed" || error.message.toLowerCase().includes("email not confirmed")));
+      return { error: error?.message ?? null, verificationRequired };
+    }, []);
+  
+    const signOut = useCallback(async () => {
+      const { error } = await supabase.auth.signOut();
+      if (!error) setSession(null);
+      return { error: error?.message ?? null };
+    }, []);
 
   const refreshSession = useCallback(async () => {
     const { data, error } = await supabase.auth.refreshSession();
     if (!error) setSession(data.session);
   }, []);
 
-  const value = useMemo(() => ({ session, user: session?.user ?? null, loading, signIn, signOut, refreshSession }), [session, loading, signIn, signOut, refreshSession]);
+  const value = useMemo(() => ({ session, user: session?.user ?? null, loading, signIn, signUp, signOut, refreshSession }), [session, loading, signIn, signUp, signOut, refreshSession]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

@@ -7,7 +7,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import MarketingHome from "./pages/MarketingHome";
-import SignupLanding from "./pages/SignupLanding";
+import Signup from "./pages/Signup";
+import VerifyEmail from "./pages/VerifyEmail";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,7 +36,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<MarketingHome />} />
           <Route path="/login" element={<LoginRoute />} />
-          <Route path="/signup" element={<SignupLanding />} />
+          <Route path="/signup" element={<Signup />} />
           <Route element={<ProtectedRoutes />}>
             <Route path="/workspace" element={<Index />} />
             <Route path="/signals" element={<Index />} />
